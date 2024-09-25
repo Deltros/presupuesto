@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Button, Autocomplete, Box } from '@mui/material';
+import { fetchTiposGastos } from '../services/gastosService';
 
 const IngresoGasto = () => {
   const [monto, setMonto] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [categoria, setCategoria] = useState(null); // Cambiamos a null para que funcione con Autocomplete
+  const [categoria, setCategoria] = useState(null);
+  const [opciones, setOpciones] = useState([]); 
 
+  useEffect(() => {
+    const obtenerTiposGastos = async () => {
+      const tiposGastos = await fetchTiposGastos();
+      setOpciones(tiposGastos);
+    };
+
+    obtenerTiposGastos();
+  }, []);
   // Opciones para el Autocomplete (puedes reemplazarlas con tus propias categorías)
-  const opciones = [
+  /*const opciones = [
     { label: 'Opción 1', value: 'opcion1' },
     { label: 'Opción 2', value: 'opcion2' },
     { label: 'Opción 3', value: 'opcion3' },
@@ -18,7 +28,7 @@ const IngresoGasto = () => {
     { label: 'Opción 8', value: 'opcion8' },
     { label: 'Opción 9', value: 'opcion9' },
     { label: 'Opción 10', value: 'opcion10' },
-  ];
+  ];*/
 
   const handleSubmit = (e) => {
     e.preventDefault();
