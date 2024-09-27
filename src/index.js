@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Importamos Router, Routes y Route
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import IngresoGasto from './components/IngresoGasto';
-import OtroArchivo from './components/OtroArchivo'; // Importa la nueva página
-import MainLayout from './components/MainLayout';  // Importa el Layout
+import Login from './components/sistema/Login';
+import PrivateRoute from './components/sistema/PrivateRoute';
+import OtroArchivo from './components/OtroArchivo';
+import MainLayout from './components/MainLayout';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import reportWebVitals from './reportWebVitals';
 
@@ -24,16 +26,34 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <Router>
-        <MainLayout>
-          <Routes>
-            {/* Define las rutas y a qué componentes deben apuntar */}
-            <Route path="/" element={<IngresoGasto />} />
-            <Route path="/otro-archivo" element={<OtroArchivo />} />
-          </Routes>
-        </MainLayout>
+        <Routes>
+          {/* Ruta pública: Login */}
+          <Route path="/" element={<Login />} />
+          
+          {/* Rutas protegidas */}
+          <Route element={<MainLayout />}>
+            <Route
+              path="/ingreso-gasto"
+              element={
+                <PrivateRoute>
+                  <IngresoGasto />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/otro-archivo"
+              element={
+                <PrivateRoute>
+                  <OtroArchivo />
+                </PrivateRoute>
+              }
+            />
+          </Route>
+        </Routes>
       </Router>
     </ThemeProvider>
   </React.StrictMode>
 );
+
 
 reportWebVitals();

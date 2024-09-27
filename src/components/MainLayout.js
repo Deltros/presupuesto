@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, IconButton, Drawer, List, ListItem, ListItemText, Box, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Link } from 'react-router-dom'; // Importa Link de react-router-dom
+import { Outlet } from 'react-router-dom';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
 
-const MainLayout = ({ children }) => {
+const MainLayout = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
+  const navigate = useNavigate();
 
   const toggleDrawer = (open) => () => {
     setOpenDrawer(open);
+  };
+
+  const handleLogout = () => {
+
+    localStorage.removeItem('token');
+
+    navigate('/');
   };
 
   return (
@@ -21,6 +31,10 @@ const MainLayout = ({ children }) => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Mi Aplicación
           </Typography>
+          {/* Botón de Logout a la derecha del AppBar */}
+          <IconButton color="inherit" onClick={handleLogout}>
+            <LogoutIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
@@ -33,11 +47,14 @@ const MainLayout = ({ children }) => {
           onKeyDown={toggleDrawer(false)}
         >
           <List>
-            <ListItem button component={Link} to="/">
+            <ListItem button component="a" href="/ingreso-gasto">
               <ListItemText primary="Ingresar Gasto" />
             </ListItem>
-            <ListItem button component={Link} to="/otro-archivo">
+            <ListItem button component="a" href="/otro-archivo">
               <ListItemText primary="Otra Página" />
+            </ListItem>
+            <ListItem button onClick={handleLogout}>
+              <ListItemText primary="Logout" />
             </ListItem>
           </List>
         </Box>
@@ -45,7 +62,8 @@ const MainLayout = ({ children }) => {
 
       {/* Contenido principal */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, marginTop: 8 }}>
-        {children}
+        {/* Aquí se renderizan las rutas hijas */}
+        <Outlet />
       </Box>
     </Box>
   );
