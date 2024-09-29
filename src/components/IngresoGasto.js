@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Autocomplete, Box } from '@mui/material';
 import { fetchTiposGastos } from '../services/gastosService';
+import axios from 'axios';
+
 
 const IngresoGasto = () => {
   const [monto, setMonto] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [fechaGasto, setFechaGasto] = useState('');
   const [categoria, setCategoria] = useState(null);
   const [opciones, setOpciones] = useState([]); 
 
@@ -16,33 +19,35 @@ const IngresoGasto = () => {
 
     obtenerTiposGastos();
   }, []);
-  // Opciones para el Autocomplete (puedes reemplazarlas con tus propias categorías)
-  /*const opciones = [
-    { label: 'Opción 1', value: 'opcion1' },
-    { label: 'Opción 2', value: 'opcion2' },
-    { label: 'Opción 3', value: 'opcion3' },
-    { label: 'Opción 4', value: 'opcion4' },
-    { label: 'Opción 5', value: 'opcion5' },
-    { label: 'Opción 6', value: 'opcion6' },
-    { label: 'Opción 7', value: 'opcion7' },
-    { label: 'Opción 8', value: 'opcion8' },
-    { label: 'Opción 9', value: 'opcion9' },
-    { label: 'Opción 10', value: 'opcion10' },
-  ];*/
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí puedes agregar la lógica para manejar el formulario, por ahora solo lo muestra en consola
-    console.log({
-      monto,
-      descripcion,
-      categoria,
-    });
-
-    // Limpiar el formulario después de ingresar el gasto
-    setMonto('');
-    setDescripcion('');
-    setCategoria(null);
+    
+    const gastoData = {
+      descripcion: descripcion,
+      valor: parseFloat(monto),
+      tarjeta_id: 2,
+      fecha_gasto: fechaGasto,
+    };
+  
+    try {
+      const response = await axios.post('http://localhost:8000/gastos/añadir', gastoData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      console.log('Respuesta del servidor:', response.data); // Manejo de la respuesta del servidor
+  
+      // Limpiar el formulario después de ingresar el gasto
+      setMonto('');
+      setDescripcion('');
+      setCategoria(null);
+      
+    } catch (error) {
+      console.error('Error al enviar el gasto:', error.response?.data || error.message);
+    }
   };
 
   return (
@@ -67,15 +72,24 @@ const IngresoGasto = () => {
           margin="normal"
           required
         />
+        <TextField
+          fullWidth
+          label="Fecha gasto"
+          type="date"
+          value={fechaGasto}
+          onChange={(e) => setFechaGasto(e.target.value)}
+          margin="normal"
+          required
+        />
         <Autocomplete
           options={opciones}
           getOptionLabel={(option) => option.label}
           value={categoria}
-          onChange={(e, newValue) => setCategoria(newValue)} // Almacena el valor seleccionado
+          onChange={(e, newValue) => setCategoria(newValue)}
           renderInput={(params) => (
-            <TextField {...params} label="Categoría" margin="normal" required />
+            <TextField {...params} label="Categoría" margin="normal" />
           )}
-          filterSelectedOptions // Para filtrar opciones seleccionadas previamente
+          filterSelectedOptions
         />
         <Button variant="contained" color="primary" type="submit" fullWidth>
           Ingresar Gasto
