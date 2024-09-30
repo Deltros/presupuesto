@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Autocomplete, Box } from '@mui/material';
 import { fetchTiposGastos } from '../services/gastosService';
-import axios from 'axios';
-
+import apiService from '../services/apiService';
 
 const IngresoGasto = () => {
   const [monto, setMonto] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaGasto, setFechaGasto] = useState('');
-  const [categoria, setCategoria] = useState(null);
-  const [opciones, setOpciones] = useState([]); 
+  const [tipoGasto, setTipoGasto] = useState(null);
+  const [tiposGastos, setTiposGastos] = useState([]); 
 
   useEffect(() => {
     const obtenerTiposGastos = async () => {
-      const tiposGastos = await fetchTiposGastos();
-      setOpciones(tiposGastos);
+      const response = await fetchTiposGastos();
+      setTiposGastos(response);
     };
 
     obtenerTiposGastos();
@@ -23,31 +22,16 @@ const IngresoGasto = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const gastoData = {
+    const postData = {
       descripcion: descripcion,
       valor: parseFloat(monto),
       tarjeta_id: 2,
       fecha_gasto: fechaGasto,
+      tipo_gasto_id: tipoGasto.value
     };
   
-    try {
-      const response = await axios.post('http://localhost:8000/gastos/añadir', gastoData, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-  
-      console.log('Respuesta del servidor:', response.data); // Manejo de la respuesta del servidor
-  
-      // Limpiar el formulario después de ingresar el gasto
-      setMonto('');
-      setDescripcion('');
-      setCategoria(null);
-      
-    } catch (error) {
-      console.error('Error al enviar el gasto:', error.response?.data || error.message);
-    }
+    const response = await apiService.post('gastos/añadir', postData);
+
   };
 
   return (
@@ -82,12 +66,12 @@ const IngresoGasto = () => {
           required
         />
         <Autocomplete
-          options={opciones}
+          options={tiposGastos}
           getOptionLabel={(option) => option.label}
-          value={categoria}
-          onChange={(e, newValue) => setCategoria(newValue)}
+          value={tipoGasto}
+          onChange={(e, newValue) => setTipoGasto(newValue)}
           renderInput={(params) => (
-            <TextField {...params} label="Categoría" margin="normal" />
+            <TextField {...params} label="Tipo" margin="normal" />
           )}
           filterSelectedOptions
         />

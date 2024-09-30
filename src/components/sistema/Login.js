@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; 
+import apiService from '../../services/apiService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -24,14 +24,17 @@ const Login = () => {
 
     try {
 
-        const response = await axios.post('http://localhost:8000/api/login', {
-          email,
-          password
-        });
-  
-        localStorage.setItem('token', response.data.token);
-  
-        navigate('/ingreso-gasto');
+      const postData = {
+        email: email,
+        password: password
+      };
+
+      const response = await apiService.post('api/login', postData);
+
+      localStorage.setItem('token', response.data.token);
+
+      navigate('/ingreso-gasto');
+
     } catch (err) {
 
         if (err.response && err.response.status === 401) {
