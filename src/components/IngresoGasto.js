@@ -4,11 +4,15 @@ import { fetchTiposGastos } from '../services/gastosService';
 import apiService from '../services/apiService';
 
 const IngresoGasto = () => {
+  const [mensaje, setMensaje] = useState('');
   const [monto, setMonto] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaGasto, setFechaGasto] = useState('');
   const [tipoGasto, setTipoGasto] = useState(null);
   const [tiposGastos, setTiposGastos] = useState([]); 
+
+  const [tarjetaId, setTarjetaId] = useState(null);
+  const [tiposTarjetas, setTiposTarjetas] = useState([]); 
 
   useEffect(() => {
     const obtenerTiposGastos = async () => {
@@ -16,27 +20,56 @@ const IngresoGasto = () => {
       setTiposGastos(response);
     };
 
+    const obtenerTarjetas = async () => {
+
+      const today = new Date();
+      setFechaGasto(today.toISOString().split('T')[0]);
+
+      const response = await apiService.get('tarjeta/getAll');
+
+      setTiposTarjetas(response.data);
+    };
+
+    obtenerTarjetas();
     obtenerTiposGastos();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const postData = {
       descripcion: descripcion,
       valor: parseFloat(monto),
-      tarjeta_id: 2,
+      tarjeta_id: tarjetaId,
       fecha_gasto: fechaGasto,
       tipo_gasto_id: tipoGasto.value
     };
   
-    const response = await apiService.post('gastos/añadir', postData);
+    await apiService.post('gastos/añadir', postData);
 
+    setMonto('');
+    setDescripcion('');
+    setMensaje('Gasto añadido con exito');
   };
 
   return (
     <Box sx={{ maxWidth: 400, margin: '0 auto', padding: 2 }}>
+      <h2>Tarjeta</h2>
+      <Autocomplete
+        options={tiposTarjetas}
+        getOptionLabel={(option) => option ? option.descripcion : ''}
+        value={tiposTarjetas.find(t => t.id === tarjetaId) || null}
+        onChange={(e, newValue) => setTarjetaId(newValue ? newValue.id : null)}
+        renderInput={(params) => (
+          <TextField {...params} label="Tarjeta" margin="normal" />
+        )}
+        filterSelectedOptions
+      />
+
+
+
       <h2>Ingreso Gasto</h2>
+      {mensaje && <p style={{ color: 'green' }}>{mensaje}</p>}
       <form onSubmit={handleSubmit}>
         <TextField
           fullWidth
